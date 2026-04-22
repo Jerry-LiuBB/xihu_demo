@@ -4,10 +4,11 @@ const state = {
   running: false,
   timer: null,
   statusPoller: null,
+  useModelMode: true,
 };
 
 const els = {
-  enableModelService: $("enableModelService"),
+  modeToggleBtn: $("modeToggleBtn"),
   personRatioThreshold: $("personRatioThreshold"),
   ratioOutput: $("ratioOutput"),
   speakText: $("speakText"),
@@ -47,7 +48,6 @@ async function api(path, options = {}) {
 }
 
 async function runOneRound() {
-  const enable = els.enableModelService.checked;
   const threshold = Number(els.personRatioThreshold.value);
   const text = els.speakText.value.trim();
 
@@ -55,7 +55,7 @@ async function runOneRound() {
     throw new Error("播报文本不能为空");
   }
 
-  if (enable) {
+  if (state.useModelMode) {
     els.modelStatus.textContent = "checking";
     const decisionRes = await api("/api/detect/person-decision", {
       method: "POST",
@@ -66,6 +66,9 @@ async function runOneRound() {
     if (!decisionRes.result) {
       return;
     }
+  } else {
+    els.modelStatus.textContent = "bypassed";
+    els.decision.textContent = "skipped";
   }
 
   const playRes = await api("/api/speech/play", {
@@ -73,6 +76,8 @@ async function runOneRound() {
     body: JSON.stringify({ text }),
   });
   els.speakStatus.textContent = playRes.request_status;
+  await runTrajectory("left", { failOnEmpty: false });
+  await runTrajectory("right", { failOnEmpty: false });
 }
 
 async function refreshSpeechStatus() {
@@ -118,15 +123,21 @@ async function stop() {
   }
 }
 
-async function runTrajectory(side) {
+async function runTrajectory(side, options = { failOnEmpty: true }) {
   const arm_ip = side === "left" ? els.leftArmIp.value.trim() : els.rightArmIp.value.trim();
   const arm_port = Number(side === "left" ? els.leftArmPort.value : els.rightArmPort.value) || 8080;
   const trajectory_name = side === "left" ? els.leftTrajectoryName.value.trim() : els.rightTrajectoryName.value.trim();
   if (!arm_ip) {
+    if (!options.failOnEmpty) {
+      return;
+    }
     setError(`${side === "left" ? "左" : "右"}机械臂IP不能为空`);
     return;
   }
   if (!trajectory_name) {
+    if (!options.failOnEmpty) {
+      return;
+    }
     setError("轨迹名称不能为空");
     return;
   }
@@ -155,6 +166,12 @@ async function runTrajectory(side) {
 els.personRatioThreshold.addEventListener("input", () => {
   els.ratioOutput.textContent = Number(els.personRatioThreshold.value).toFixed(2);
 });
+
+els.modeToggleBtn.addEventListener("click", () => {
+  state.useModelMode = !state.useModelMode;
+  els.modeToggleBtn.textContent = state.useModelMode ? "模式：模型联动模式" : "模式：非模型循环模式";
+});
+
 els.startBtn.addEventListener("click", start);
 els.stopBtn.addEventListener("click", stop);
 els.runLeftTrajectoryBtn.addEventListener("click", () => runTrajectory("left"));
