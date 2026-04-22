@@ -5,7 +5,7 @@ from time import perf_counter
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .models import (
@@ -109,5 +109,5 @@ app.mount("/ui", StaticFiles(directory="frontend", html=True), name="ui")
 
 
 @app.get("/")
-async def root() -> FileResponse:
-    return FileResponse("frontend/index.html")
+async def root() -> RedirectResponse:
+    return RedirectResponse(url="/ui/")
