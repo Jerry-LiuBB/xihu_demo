@@ -12,16 +12,21 @@ const els = {
   ratioOutput: $("ratioOutput"),
   speakText: $("speakText"),
   speakInterval: $("speakInterval"),
-  armIp: $("armIp"),
-  armPort: $("armPort"),
-  trajectoryName: $("trajectoryName"),
+  leftArmIp: $("leftArmIp"),
+  leftArmPort: $("leftArmPort"),
+  leftTrajectoryName: $("leftTrajectoryName"),
+  rightArmIp: $("rightArmIp"),
+  rightArmPort: $("rightArmPort"),
+  rightTrajectoryName: $("rightTrajectoryName"),
   startBtn: $("startBtn"),
   stopBtn: $("stopBtn"),
-  runTrajectoryBtn: $("runTrajectoryBtn"),
+  runLeftTrajectoryBtn: $("runLeftTrajectoryBtn"),
+  runRightTrajectoryBtn: $("runRightTrajectoryBtn"),
   modelStatus: $("modelStatus"),
   speakStatus: $("speakStatus"),
   decision: $("decision"),
-  armStatus: $("armStatus"),
+  leftArmStatus: $("leftArmStatus"),
+  rightArmStatus: $("rightArmStatus"),
   lastError: $("lastError"),
 };
 
@@ -113,12 +118,16 @@ async function stop() {
   }
 }
 
-async function runTrajectory() {
-  const arm_ip = els.armIp.value.trim();
-  const arm_port = Number(els.armPort.value || 8080);
-  const trajectory_name = els.trajectoryName.value;
+async function runTrajectory(side) {
+  const arm_ip = side === "left" ? els.leftArmIp.value.trim() : els.rightArmIp.value.trim();
+  const arm_port = Number(side === "left" ? els.leftArmPort.value : els.rightArmPort.value) || 8080;
+  const trajectory_name = side === "left" ? els.leftTrajectoryName.value.trim() : els.rightTrajectoryName.value.trim();
   if (!arm_ip) {
-    setError("机械臂IP不能为空");
+    setError(`${side === "left" ? "左" : "右"}机械臂IP不能为空`);
+    return;
+  }
+  if (!trajectory_name) {
+    setError("轨迹名称不能为空");
     return;
   }
 
@@ -127,11 +136,19 @@ async function runTrajectory() {
       method: "POST",
       body: JSON.stringify({ arm_ip, arm_port, trajectory_name }),
     });
-    els.armStatus.textContent = res.request_status;
+    if (side === "left") {
+      els.leftArmStatus.textContent = res.request_status;
+    } else {
+      els.rightArmStatus.textContent = res.request_status;
+    }
     setError("");
   } catch (err) {
     setError(err.message);
-    els.armStatus.textContent = "error";
+    if (side === "left") {
+      els.leftArmStatus.textContent = "error";
+    } else {
+      els.rightArmStatus.textContent = "error";
+    }
   }
 }
 
@@ -140,6 +157,7 @@ els.personRatioThreshold.addEventListener("input", () => {
 });
 els.startBtn.addEventListener("click", start);
 els.stopBtn.addEventListener("click", stop);
-els.runTrajectoryBtn.addEventListener("click", runTrajectory);
+els.runLeftTrajectoryBtn.addEventListener("click", () => runTrajectory("left"));
+els.runRightTrajectoryBtn.addEventListener("click", () => runTrajectory("right"));
 
 refreshSpeechStatus();

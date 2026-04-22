@@ -32,28 +32,47 @@
         <input id="speakInterval" type="number" min="500" step="100" value="3000" />
       </label>
 
-      <label class="row">
-        <span>机械臂IP</span>
-        <input id="armIp" type="text" value="192.168.1.18" />
-      </label>
-
-      <label class="row">
-        <span>机械臂端口</span>
-        <input id="armPort" type="number" min="1" max="65535" value="8080" />
-      </label>
-
-      <label class="row">
-        <span>轨迹选择</span>
-        <select id="trajectoryName">
-          <option value="123">轨迹 123</option>
-          <option value="456">轨迹 456</option>
-        </select>
-      </label>
-
       <div class="actions">
         <button id="startBtn">开始执行</button>
         <button id="stopBtn" class="danger">停止播报</button>
-        <button id="runTrajectoryBtn">执行机械臂轨迹</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>左机械臂配置</h2>
+      <label class="row">
+        <span>左臂IP</span>
+        <input id="leftArmIp" type="text" value="192.168.1.18" />
+      </label>
+      <label class="row">
+        <span>左臂端口</span>
+        <input id="leftArmPort" type="number" min="1" max="65535" value="8080" />
+      </label>
+      <label class="row">
+        <span>轨迹名称</span>
+        <input id="leftTrajectoryName" type="text" value="123" />
+      </label>
+      <div class="actions">
+        <button id="runLeftTrajectoryBtn">执行左臂轨迹</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>右机械臂配置</h2>
+      <label class="row">
+        <span>右臂IP</span>
+        <input id="rightArmIp" type="text" value="192.168.1.19" />
+      </label>
+      <label class="row">
+        <span>右臂端口</span>
+        <input id="rightArmPort" type="number" min="1" max="65535" value="8080" />
+      </label>
+      <label class="row">
+        <span>轨迹名称</span>
+        <input id="rightTrajectoryName" type="text" value="456" />
+      </label>
+      <div class="actions">
+        <button id="runRightTrajectoryBtn">执行右臂轨迹</button>
       </div>
     </section>
 
@@ -62,7 +81,8 @@
       <p>modelStatus: <strong id="modelStatus">idle</strong></p>
       <p>speakStatus: <strong id="speakStatus">idle</strong></p>
       <p>decision: <strong id="decision">-</strong></p>
-      <p>armStatus: <strong id="armStatus">idle</strong></p>
+      <p>leftArmStatus: <strong id="leftArmStatus">idle</strong></p>
+      <p>rightArmStatus: <strong id="rightArmStatus">idle</strong></p>
       <p>lastError: <strong id="lastError">-</strong></p>
     </section>
   </main>
