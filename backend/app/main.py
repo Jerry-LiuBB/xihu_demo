@@ -9,6 +9,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .models import (
+    ArmRunTrajectoryRequest,
+    ArmRunTrajectoryResponse,
     ApiErrorResponse,
     ErrorCode,
     PersonDecisionRequest,
@@ -19,6 +21,7 @@ from .models import (
     SpeechStopResponse,
 )
 from .services.decision import DecisionService
+from .services.arm_socket_client import ArmSocketClient, ArmSocketError
 from .services.speech_adapter import SpeechBusyError, SpeechModuleAdapter
 from .services.yolo_caller import YoloServiceCaller, YoloServiceError
 
@@ -35,6 +38,7 @@ app.add_middleware(
 speech_adapter = SpeechModuleAdapter()
 yolo_caller = YoloServiceCaller()
 decision_service = DecisionService(confidence_threshold=0.5)
+arm_socket_client = ArmSocketClient()
 
 detect_lock = None
 
@@ -103,6 +107,23 @@ async def speech_stop() -> SpeechStopResponse:
 async def speech_status() -> SpeechStatusResponse:
     state = await speech_adapter.status()
     return SpeechStatusResponse(status=state.value)
+
+
+@app.post("/api/arm/run-trajectory", response_model=ArmRunTrajectoryResponse)
+async def arm_run_trajectory(req: ArmRunTrajectoryRequest) -> ArmRunTrajectoryResponse:
+    try:
+        await arm_socket_client.send_run_trajectory(
+            arm_ip=req.arm_ip,
+            trajectory_name=req.trajectory_name,
+            arm_port=req.arm_port,
+            timeout_sec=req.timeout_sec,
+        )
+        return ArmRunTrajectoryResponse(success=True, request_status="sent")
+    except ArmSocketError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=ApiErrorResponse(code=ErrorCode.ARM_SOCKET_ERROR, message=str(exc)).model_dump(),
+        )
 
 
 app.mount("/ui", StaticFiles(directory="frontend", html=True), name="ui")

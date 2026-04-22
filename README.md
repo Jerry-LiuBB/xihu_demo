@@ -42,6 +42,7 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 - `POST /api/speech/play`
 - `POST /api/speech/stop`
 - `GET /api/speech/status`
+- `POST /api/arm/run-trajectory`
 
 ## 环境变量
 
@@ -51,3 +52,5 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
 - `SpeechModuleAdapter._do_speak_once` 目前是模拟播报耗时；实际部署时替换为机器人语音模块调用。
 - `YoloServiceCaller.fetch_latest_detections` 默认调用 `GET /detect/latest`；按你们已有 YOLO 服务协议改造即可。
+- 新增机械臂轨迹控制接口：后端通过 socket 连接前端输入的机械臂 IP/端口，并发送  
+  `{"command":"set_run_trajectory_file","name":"轨迹名"}`。

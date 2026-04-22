@@ -12,11 +12,16 @@ const els = {
   ratioOutput: $("ratioOutput"),
   speakText: $("speakText"),
   speakInterval: $("speakInterval"),
+  armIp: $("armIp"),
+  armPort: $("armPort"),
+  trajectoryName: $("trajectoryName"),
   startBtn: $("startBtn"),
   stopBtn: $("stopBtn"),
+  runTrajectoryBtn: $("runTrajectoryBtn"),
   modelStatus: $("modelStatus"),
   speakStatus: $("speakStatus"),
   decision: $("decision"),
+  armStatus: $("armStatus"),
   lastError: $("lastError"),
 };
 
@@ -108,10 +113,33 @@ async function stop() {
   }
 }
 
+async function runTrajectory() {
+  const arm_ip = els.armIp.value.trim();
+  const arm_port = Number(els.armPort.value || 8080);
+  const trajectory_name = els.trajectoryName.value;
+  if (!arm_ip) {
+    setError("机械臂IP不能为空");
+    return;
+  }
+
+  try {
+    const res = await api("/api/arm/run-trajectory", {
+      method: "POST",
+      body: JSON.stringify({ arm_ip, arm_port, trajectory_name }),
+    });
+    els.armStatus.textContent = res.request_status;
+    setError("");
+  } catch (err) {
+    setError(err.message);
+    els.armStatus.textContent = "error";
+  }
+}
+
 els.personRatioThreshold.addEventListener("input", () => {
   els.ratioOutput.textContent = Number(els.personRatioThreshold.value).toFixed(2);
 });
 els.startBtn.addEventListener("click", start);
 els.stopBtn.addEventListener("click", stop);
+els.runTrajectoryBtn.addEventListener("click", runTrajectory);
 
 refreshSpeechStatus();
