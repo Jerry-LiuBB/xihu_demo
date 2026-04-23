@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xihu Demo Control Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>统一管理面板（YOLO + 语音）</h1>
+
+    <section class="panel">
+      <div class="actions">
+        <button id="modeToggleBtn">模式：模型联动模式</button>
+      </div>
+
+      <label class="row">
+        <span>画面占比阈值</span>
+        <input id="personRatioThreshold" type="range" min="0" max="1" step="0.01" value="0.35" />
+        <output id="ratioOutput">0.35</output>
+      </label>
+
+      <label class="row">
+        <span>播报文本</span>
+        <input id="speakText" type="text" maxlength="50" value="欢迎来到展厅" />
+      </label>
+
+      <label class="row">
+        <span>循环间隔(ms)</span>
+        <input id="speakInterval" type="number" min="500" step="100" value="3000" />
+      </label>
+
+      <div class="actions">
+        <button id="startBtn">开始执行</button>
+        <button id="stopBtn" class="danger">停止播报</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>左机械臂配置</h2>
+      <label class="row">
+        <span>左臂IP</span>
+        <input id="leftArmIp" type="text" value="192.168.127.18" />
+      </label>
+      <label class="row">
+        <span>左臂端口</span>
+        <input id="leftArmPort" type="number" min="1" max="65535" value="8080" />
+      </label>
+      <label class="row">
+        <span>轨迹名称</span>
+        <input id="leftTrajectoryName" type="text" value="1" />
+      </label>
+      <div class="actions">
+        <button id="runLeftTrajectoryBtn">执行左臂轨迹</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>右机械臂配置</h2>
+      <label class="row">
+        <span>右臂IP</span>
+        <input id="rightArmIp" type="text" value="192.168.127.19" />
+      </label>
+      <label class="row">
+        <span>右臂端口</span>
+        <input id="rightArmPort" type="number" min="1" max="65535" value="8080" />
+      </label>
+      <label class="row">
+        <span>轨迹名称</span>
+        <input id="rightTrajectoryName" type="text" value="1" />
+      </label>
+      <div class="actions">
+        <button id="runRightTrajectoryBtn">执行右臂轨迹</button>
+      </div>
+    </section>
+
+    <section class="panel status">
+      <h2>状态</h2>
+      <p>modelStatus: <strong id="modelStatus">idle</strong></p>
+      <p>speakStatus: <strong id="speakStatus">idle</strong></p>
+      <p>decision: <strong id="decision">-</strong></p>
+      <p>leftArmStatus: <strong id="leftArmStatus">idle</strong></p>
+      <p>rightArmStatus: <strong id="rightArmStatus">idle</strong></p>
+      <p>lastError: <strong id="lastError">-</strong></p>
+    </section>
+  </main>
+
+  <script src="main.js" type="module"></script>
+</body>
+</html>
