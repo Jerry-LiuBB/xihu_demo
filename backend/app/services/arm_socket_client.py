@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import socket
 
 
 class ArmSocketError(RuntimeError):
@@ -31,13 +32,31 @@ class ArmSocketClient:
         command = self.build_run_trajectory_command(trajectory_name)
 
         try:
-            reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(arm_ip, arm_port),
-                timeout=timeout_sec,
+            await asyncio.to_thread(
+                self._send_once,
+                arm_ip,
+                arm_port,
+                command,
+                timeout_sec,
             )
-            writer.write(command.encode("utf-8"))
-            await asyncio.wait_for(writer.drain(), timeout=timeout_sec)
-            writer.close()
-            await writer.wait_closed()
-        except Exception as exc:
-            raise ArmSocketError(f"socket send failed: {exc}") from exc
+        except Exception as first_exc:
+            # retry once for transient network jitter
+            try:
+                await asyncio.sleep(0.1)
+                await asyncio.to_thread(
+                    self._send_once,
+                    arm_ip,
+                    arm_port,
+                    command,
+                    timeout_sec,
+                )
+            except Exception as second_exc:
+                raise ArmSocketError(
+                    f"socket send failed to {arm_ip}:{arm_port}, "
+                    f"command={command}, first_error={first_exc}, retry_error={second_exc}"
+                ) from second_exc
+
+    @staticmethod
+    def _send_once(arm_ip: str, arm_port: int, command: str, timeout_sec: float) -> None:
+        with socket.create_connection((arm_ip, arm_port), timeout=timeout_sec) as sock:
+            sock.sendall(command.encode("utf-8"))
