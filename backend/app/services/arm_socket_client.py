@@ -22,6 +22,11 @@ class ArmSocketClient:
         # {"command":"set_run_trajectory_file","name":"1"}
         return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
+    @classmethod
+    def build_run_trajectory_wire_message(cls, trajectory_name: str) -> bytes:
+        # arm controller requires CRLF terminated line protocol
+        return (cls.build_run_trajectory_command(trajectory_name) + "\r\n").encode("utf-8")
+
     async def send_run_trajectory(
         self,
         arm_ip: str,
@@ -30,13 +35,14 @@ class ArmSocketClient:
         timeout_sec: float = 2.0,
     ) -> None:
         command = self.build_run_trajectory_command(trajectory_name)
+        wire_message = self.build_run_trajectory_wire_message(trajectory_name)
 
         try:
             await asyncio.to_thread(
                 self._send_once,
                 arm_ip,
                 arm_port,
-                command,
+                wire_message,
                 timeout_sec,
             )
         except Exception as first_exc:
@@ -47,7 +53,7 @@ class ArmSocketClient:
                     self._send_once,
                     arm_ip,
                     arm_port,
-                    command,
+                    wire_message,
                     timeout_sec,
                 )
             except Exception as second_exc:
@@ -57,6 +63,6 @@ class ArmSocketClient:
                 ) from second_exc
 
     @staticmethod
-    def _send_once(arm_ip: str, arm_port: int, command: str, timeout_sec: float) -> None:
+    def _send_once(arm_ip: str, arm_port: int, wire_message: bytes, timeout_sec: float) -> None:
         with socket.create_connection((arm_ip, arm_port), timeout=timeout_sec) as sock:
-            sock.sendall(command.encode("utf-8"))
+            sock.sendall(wire_message)

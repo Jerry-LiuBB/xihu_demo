@@ -54,7 +54,7 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 - `YoloServiceCaller.fetch_latest_detections` 默认调用 `GET /detect/latest`；按你们已有 YOLO 服务协议改造即可。
 - 新增机械臂轨迹控制接口：后端通过 socket 连接前端输入的机械臂 IP/端口，并发送  
   `{"command":"set_run_trajectory_file","name":"轨迹名"}`。
-  （发送为紧凑 JSON 字符串，不附加空格或换行）
+  （发送为紧凑 JSON 字符串，并以 `\r\n` 结尾）
   若网络瞬时抖动，后端会自动重试 1 次并在错误信息中返回 IP/端口与异常详情。
 - 前端机械臂部分支持左/右两套独立配置（各自 IP、端口、轨迹名输入），轨迹名为可输入文本，不是固定下拉。
 - 前端默认机械臂参数：
